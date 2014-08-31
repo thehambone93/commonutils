@@ -1,0 +1,44 @@
+*** commonutils Development Changelog
+*** Written by: Wes Hampson
+*** Started: 31 August 2014
+===============================================================================
+     Version: 0.1.0
+     Started: 25 August 2014
+    Built by: Wes Hampson
+  Build date: 31 August 2014
+Build number: 59
+Changes made: -Started writing a library containing classes and functions that
+               I commonly use.
+              -Added class: "ansi.ANSI" - handles operations related to ANSI
+               colors, such as converting from RGB to the nearest ANSI color
+               and providing a list of ANSI escape sequences for ANSI colors
+               with a black background.
+              -Added class: "ansi.ANSIException" - used for any ANSI-related
+               errors.
+              -Added class: "email.Email" - used for sending emails using
+               SMTP. Also contains a list of common email providers and their
+               respective SMTP server address and port.
+              -Added class: "gui.bugreport.BugReporter" - front-end for the
+               Email class so users can send me bug reports or feedback.
+              -Added class: "io.DocumentOutputStream" - an OutputStream for
+               writing to "javax.swing.text.Document" objects.
+              -Added class: "logging.Logger" - abstract class used for logging
+               information. Can write to stdout, a file, or a Document using
+               the "DocumentOutputStream".
+              -Added class: "logging.JLineLogger" - implementation of the
+               "Logger" class that is meant to work with the
+               "jline.console.ConsoleReader" class. It allows for uninterrupted
+               typing in the console while information is being outputted to
+               the console.
+              -Added class: "logging.Timestamp" - essentially a shortcut for
+               "java.text.SimpleDateFormat". Returns the current time in the
+               specified format.
+              -Added class: "xml.XMLReader" - reads a file or inputstream and
+               parses it as an XML file using dom4j's "org.dom4j.io.SAXReader"
+               class. Returns an "org.dom4j.Document" object.
+              -Added class: "xml.XMLWritable" - an interface that will be used
+               to denote whether or not an object can be written to an XML
+               file. Classes that implement this interface must define the
+               "getXMLData()" method, which will tell the "XMLWriter" (which
+               has yet to be written) how to save the object.
+===============================================================================
