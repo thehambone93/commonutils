@@ -256,7 +256,7 @@ public class BugReporter extends javax.swing.JFrame {
         String emailSubject = emailSubjectTextField.getText();
         String emailText = emailBodyTextArea.getText();
         try {
-            Email.sendEmail(emailProvider, "WesleyHampson@gmail.com", emailUsername, emailPassword, emailSubject, emailText);
+            Email.sendEmail(emailProvider, recipientAddress, emailUsername, emailPassword, emailSubject, emailText);
         } catch (MessagingException ex) {
             Logger.log(Logger.Level.ERROR, ex, null);
             JOptionPane.showMessageDialog(this, "<html><p style='width: 200px;'>" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
