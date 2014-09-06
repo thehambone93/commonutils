@@ -37,7 +37,7 @@ import weshampson.commonutils.io.DocumentOutputStream;
 /**
  *
  * @author  Wes Hampson
- * @version 0.1.0 (Aug 25, 2014)
+ * @version 0.2.0 (Sep 6, 2014)
  * @since   0.1.0 (Aug 25, 2014)
  */
 public abstract class Logger {
@@ -48,7 +48,6 @@ public abstract class Logger {
     private static final SimpleAttributeSet DOCATTRS_INFO = new SimpleAttributeSet();
     private static final SimpleAttributeSet DOCATTRS_ERROR = new SimpleAttributeSet();
     private static final SimpleAttributeSet DOCATTRS_WARNING = new SimpleAttributeSet();
-    
     private static Logger currentLogger = new Logger(DEFAULT_STDOUT, DEFAULT_STDERR) {
         @Override
         public void print(Level level, String message, boolean writePrefix, boolean newLine) {
@@ -58,16 +57,10 @@ public abstract class Logger {
             } else {
                 pw = getStdout();
             }
-            if (isColorEnabled()) {
-                pw.print(level.getConsoleColor().toString());
-            }
             if (writePrefix) {
                 pw.print(parsePrefix(level, level.getPrefix()));
             }
             pw.print(message);
-            if (isColorEnabled()) {
-                pw.print(ANSI.ANSI_NORMAL);
-            }
             if (newLine) {
                 pw.println();
             }

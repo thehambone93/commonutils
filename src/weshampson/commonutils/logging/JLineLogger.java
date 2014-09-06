@@ -28,7 +28,7 @@ import weshampson.commonutils.io.DocumentOutputStream;
 /**
  *
  * @author  Wes Hampson
- * @version 0.1.0 (Aug 25, 2014)
+ * @version 0.2.0 (Sep 6, 2014)
  * @since   0.1.0 (Aug 25, 2014)
  */
 public class JLineLogger extends Logger {
@@ -102,5 +102,4 @@ public class JLineLogger extends Logger {
             throw new RuntimeException(ex);
         }
     }
-    
 }

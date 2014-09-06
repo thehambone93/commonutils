@@ -2,6 +2,26 @@
 *** Written by: Wes Hampson
 *** Started: 31 August 2014
 ===============================================================================
+     Version: 0.2.0
+     Started: 5 September 2014
+    Built by: Wes Hampson
+  Build date: 6 September 2014
+Build number: 98
+Changes made: -Removed code from "logging.Logger" class that would print
+               strange characters if color was enabled in the default
+               Logger.
+              -Added class: "logging.ANSILogger" - used in place of the default
+               logger when colored output to the console is desired.
+              -Added class: "exception.UncaughtExceptionHandler" - used to
+               catch previously uncaught exceptions. May call an instance of
+               "gui.exception.UncaughtExceptionDialog".
+              -Added class: "gui.exception.UncaughtExceptionDialog" - a dialog
+               window that shows information about an uncaught exception to the
+               user.
+              -Added class: "jar.JarProperties" - gets properties such as
+               version number and build date from a properties file located in
+               the META-INF directory.
+===============================================================================
      Version: 0.1.0
      Started: 25 August 2014
     Built by: Wes Hampson
