@@ -29,6 +29,7 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import weshampson.commonutils.logging.Level;
 import weshampson.commonutils.logging.Logger;
 
 /**
@@ -39,8 +40,8 @@ import weshampson.commonutils.logging.Logger;
  */
 public class Email {
     public static void sendEmail(EmailProvider emailProvider, String emailRecipient, final String emailUsername, final String emailPassword, String emailSubject, String emailText) throws AddressException, MessagingException {
-        Logger.log(Logger.Level.INFO, "Provider: " + emailProvider.getDomainName());
-        Logger.log(Logger.Level.INFO, "Username: " + emailUsername);
+        Logger.log(Level.INFO, "Provider: " + emailProvider.getDomainName());
+        Logger.log(Level.INFO, "Username: " + emailUsername);
         Properties emailProperties = new Properties();
         emailProperties.put("mail.smtp.auth", "true");
         emailProperties.put("mail.smtp.host", emailProvider.getSMTPAddress());
@@ -59,7 +60,7 @@ public class Email {
         emailMessage.setSubject(emailSubject);
         emailMessage.setText(emailText);
         Transport.send(emailMessage);
-        Logger.log(Logger.Level.INFO, "Email successfully sent to " + emailRecipient + ".");
+        Logger.log(Level.INFO, "Email successfully sent to " + emailRecipient + ".");
     }
     public static enum EmailProvider {
         AOL("aol.com", "smtp.aol.com", 587),

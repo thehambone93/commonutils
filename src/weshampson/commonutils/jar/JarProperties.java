@@ -25,12 +25,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import weshampson.commonutils.logging.Level;
 import weshampson.commonutils.logging.Logger;
 
 /**
  *
  * @author  Wes Hampson
- * @version 0.2.0 (Sep 6, 2014)
+ * @version 0.3.0 (Sep 16, 2014)
  * @since   0.2.0 (Sep 5, 2014)
  */
 public class JarProperties {
@@ -46,7 +47,7 @@ public class JarProperties {
                 return(version);
             }
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
+            Logger.log(Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
             return("<null>");
         }
     }
@@ -60,7 +61,7 @@ public class JarProperties {
                 return(version);
             }
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
+            Logger.log(Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
             return("<null>");
         }
     }
@@ -70,14 +71,14 @@ public class JarProperties {
             if (jarProperties.isEmpty()) {
                 return(new Date(0));
             } else {
-                Date buildDate = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss").parse(jarProperties.getProperty("build.date") + " " + jarProperties.getProperty("build.time"));
+                Date buildDate = new SimpleDateFormat(jarProperties.getProperty("build.timestamp.format")).parse(jarProperties.getProperty("build.timestamp"));
                 return(buildDate);
             }
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
+            Logger.log(Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
             return(new Date(0));
         } catch (ParseException ex) {
-            Logger.log(Logger.Level.ERROR, ex, null);
+            Logger.log(Level.ERROR, ex, null);
             return(new Date(0));
         }
     }
@@ -91,7 +92,7 @@ public class JarProperties {
                 return(buildNumber);
             }
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
+            Logger.log(Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
             return(-1);
         }
     }
@@ -103,7 +104,7 @@ public class JarProperties {
             Properties jarProperties = loadProperties();
             return(jarProperties.getProperty(key));
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
+            Logger.log(Level.ERROR, ex, "Failed to load jar properties - " + ex.toString());
             return(null);
         }
     }

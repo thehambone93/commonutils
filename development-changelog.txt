@@ -2,6 +2,29 @@
 *** Written by: Wes Hampson
 *** Started: 31 August 2014
 ===============================================================================
+     Version: 0.3.0
+     Started: 12 September 2014
+    Built by: Wes Hampson
+  Build date: 07 October 2014
+Build number: 134
+Changes made: -Updated class: "jar.JarProperties" - accommodate changes made to
+               the config file that it accesses.
+              -Updated class: "gui.bugreport.BugReport" - accommoate changes
+               made to the config file that it accesses.
+              -Updated class: "logging.Logger" - removed the "Level" enum and
+               moved it to its own class.
+              -Added class: "logging.Level" - Defines logging levels to be used
+               with the "logging.Logger" class.
+              -Added class: "jar.JarUtils" - will contain various operations
+               related to Jar files. Currently contains a function for
+               extracting Jar resources to files.
+              -Added class: "updater.UpdateInstaller" - meant to be called as a
+               standalone class file. Used for installing updates.
+              -Added class: "jvm.JVMBuilder" - used for invoking new JVM
+               instances.
+              -Added class: "updater.UpdaterSettingsPanel" - a JPanel used for
+               modifying the updater configuration.
+===============================================================================
      Version: 0.2.0
      Started: 5 September 2014
     Built by: Wes Hampson

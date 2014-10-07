@@ -34,16 +34,18 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import weshampson.commonutils.email.Email;
+import weshampson.commonutils.logging.Level;
 import weshampson.commonutils.logging.Logger;
 import weshampson.commonutils.xml.XMLReader;
 
 /**
  *
  * @author  Wes Hampson
- * @version 0.1.0 (Aug 29, 2014)
+ * @version 0.3.0 (Sep 20, 2014)
  * @since   0.1.0 (Aug 29, 2014)
  */
 public class BugReporter extends javax.swing.JFrame {
+    private static final String CONFIG_FILE = "META-INF/bugReporterConfig.xml";
     private String recipientAddress;
     /** Creates new form BugReporter */
     public BugReporter() {
@@ -88,7 +90,7 @@ public class BugReporter extends javax.swing.JFrame {
     }
     private void getRecipientAddress() {
         try {
-            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("META-INF/bugReporterConfig.xml");
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(CONFIG_FILE);
             Document doc = XMLReader.read(inputStream);
             Element rootElement = doc.getRootElement();
             for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
@@ -99,9 +101,9 @@ public class BugReporter extends javax.swing.JFrame {
                 }
             }
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, null);
+            Logger.log(Level.ERROR, ex, null);
         } catch (DocumentException ex) {
-            Logger.log(Logger.Level.ERROR, ex, null);
+            Logger.log(Level.ERROR, ex, null);
         }
     }
 
@@ -258,7 +260,7 @@ public class BugReporter extends javax.swing.JFrame {
         try {
             Email.sendEmail(emailProvider, recipientAddress, emailUsername, emailPassword, emailSubject, emailText);
         } catch (MessagingException ex) {
-            Logger.log(Logger.Level.ERROR, ex, null);
+            Logger.log(Level.ERROR, ex, null);
             JOptionPane.showMessageDialog(this, "<html><p style='width: 200px;'>" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_submitButtonActionPerformed
@@ -266,11 +268,11 @@ public class BugReporter extends javax.swing.JFrame {
     private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
         try {
             Desktop.getDesktop().mail(new URI("mailto:" + recipientAddress));
-            Logger.log(Logger.Level.INFO, "Mailto:" + recipientAddress + " clicked.");
+            Logger.log(Level.INFO, "Mailto:" + recipientAddress + " clicked.");
         } catch (URISyntaxException ex) {
-            Logger.log(Logger.Level.ERROR, ex, null);
+            Logger.log(Level.ERROR, ex, null);
         } catch (IOException ex) {
-            Logger.log(Logger.Level.ERROR, ex, null);
+            Logger.log(Level.ERROR, ex, null);
         }
     }//GEN-LAST:event_jLabel1MouseClicked
 

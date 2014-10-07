@@ -70,9 +70,14 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <!-- Last updated 12 September 2014 by Wes Hampson -->
+    <property name="application.title" value="commonutils"/>
+    <property name="application.version" value="0.3.0"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="dist.jar" value="${dist.dir}/${application.title}-${application.version}.jar"/>
+    <property name="build.timestamp.format" value="yyyy-MM-dd HH:mm:ss"/>
     <tstamp>
-        <format property="build.date" pattern="yyyy-MMM-dd"/>
-        <format property="build.time" pattern="HH:mm:ss"/>
+        <format property="build.timestamp" pattern="${build.timestamp.format}"/>
     </tstamp>
     <target name="-post-jar">
         <buildnumber file="build.number"/>
@@ -83,12 +88,12 @@
             <entry key="application.title" value="${application.title}"/>
             <entry key="application.version" value="${application.version}"/>
             <entry key="build.number" value="${build.number}"/>
-            <entry key="build.date" value="${build.date}"/>
-            <entry key="build.time" value="${build.time}"/>
+            <entry key="build.timestamp" value="${build.timestamp}"/>
+            <entry key="build.timestamp.format" value="${build.timestamp.format}"/>
         </propertyfile>
         <jar destfile="${dist.jar}" update="true">
             <metainf dir="." includes="jar.properties"/>
-            <metainf dir="." includes="bugReporterConfig.xml"/>
+            <metainf dir="." includes="**/*Config.xml"/>
         </jar>
 	</target>
 </project>

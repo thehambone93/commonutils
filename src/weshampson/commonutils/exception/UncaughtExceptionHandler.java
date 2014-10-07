@@ -22,6 +22,7 @@ package weshampson.commonutils.exception;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import weshampson.commonutils.gui.exception.UncaughtExceptionDialog;
+import weshampson.commonutils.logging.Level;
 import weshampson.commonutils.logging.Logger;
 
 /**
@@ -41,7 +42,7 @@ public class UncaughtExceptionHandler implements Thread.UncaughtExceptionHandler
         StringWriter stringWriter = new StringWriter();
         PrintWriter stackTraceWriter = new PrintWriter(stringWriter);
         e.printStackTrace(stackTraceWriter);
-        Logger.log(Logger.Level.ERROR, "Uncaught exception: " + e.toString() + "\nStack trace:\n" + stringWriter.toString());
+        Logger.log(Level.ERROR, "Uncaught exception: " + e.toString() + "\nStack trace:\n" + stringWriter.toString());
         if (showDialog) {
             UncaughtExceptionDialog uncaughtExceptionDialog = new UncaughtExceptionDialog(null, true, e);
             uncaughtExceptionDialog.pack();

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<updaterConfig>
+  <updateURL>http://76.245.204.132/update.php</updateURL>
+  <programName>TimeKeeper</programName>
+  <versionString>1.0.0</versionString>
+  <buildState>stable</buildState>
+  <deleteOldVersion>true</deleteOldVersion>
+  <checkOnStartup>true</checkOnStartup>
+</updaterConfig>
