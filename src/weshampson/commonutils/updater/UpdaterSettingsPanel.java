@@ -19,56 +19,50 @@
 package weshampson.commonutils.updater;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
-import javax.swing.JOptionPane;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-import weshampson.commonutils.logging.Level;
-import weshampson.commonutils.logging.Logger;
-import weshampson.commonutils.xml.XMLReader;
+import static weshampson.commonutils.updater.UpdaterSettingsManager.*;
 
 /**
  *
  * @author Wes Hampson
- * @version 0.3.0 (Sep 27, 2014)
+ * @version 0.3.1 (Nov 23, 2014)
  * @since   0.3.0 (Sep 27, 2014)
  */
 public class UpdaterSettingsPanel extends javax.swing.JPanel {
     private final File configFile;
-    private final Properties updaterProperties;
-    public UpdaterSettingsPanel(File configFile) throws IOException, DocumentException {
-        initComponents();
+    public UpdaterSettingsPanel(File configFile) {
         this.configFile = configFile;
-        this.updaterProperties = loadProperties(configFile);
+        initComponents();
+        loadSettings();
     }
-    private Properties loadProperties(File configFile) throws IOException, DocumentException {
-        Properties properties = new Properties();
-        if (!configFile.exists()) {
-            throw new FileNotFoundException("file not found - " + configFile.getAbsolutePath());
-        }
-        Document doc = XMLReader.read(configFile);
-        Element rootElement = doc.getRootElement();
-        for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
-            Element e = (Element)i.next();
-            properties.put(e.getName(), e.getText());
-        }
-        jTextField1.setText(properties.getProperty("updateURL"));
-        String buildState = properties.getProperty("buildState");
+    private void loadSettings() {
+        updateURLTextField.setText(UpdaterSettingsManager.get(PROPERTY_UPDATE_URL));
+        String buildState = UpdaterSettingsManager.get(PROPERTY_BUILD_STATE);
         if (buildState.equals("*")) {
             buildState = "all";
         }
-        jComboBox1.setSelectedItem(buildState);
-        jCheckBox1.setSelected(Boolean.valueOf(properties.getProperty("checkOnStartup")));
-        jCheckBox2.setSelected(Boolean.valueOf(properties.getProperty("deleteOldVersion")));
-        return(properties);
+        buildStateComboBox.setSelectedItem(buildState);
+        checkForUpdatesOnStartupCheckBox.setSelected(Boolean.valueOf(UpdaterSettingsManager.get(PROPERTY_CHECK_ON_STARTUP)));
+    }
+    public void loadDefaultSettings() {
+        updateURLTextField.setText(UpdaterSettingsManager.getDefault(PROPERTY_UPDATE_URL));
+        String buildState = UpdaterSettingsManager.getDefault(PROPERTY_BUILD_STATE);
+        if (buildState.equals("*")) {
+            buildState = "all";
+        }
+        buildStateComboBox.setSelectedItem(buildState);
+        checkForUpdatesOnStartupCheckBox.setSelected(Boolean.valueOf(UpdaterSettingsManager.getDefault(PROPERTY_CHECK_ON_STARTUP)));
+
+    }
+    public void saveSettings() throws IOException {
+        UpdaterSettingsManager.set(PROPERTY_UPDATE_URL, updateURLTextField.getText());
+        String buildState = (String)buildStateComboBox.getSelectedItem();
+        if (buildState.equals("all")) {
+            buildState = "*";
+        }
+        UpdaterSettingsManager.set(PROPERTY_BUILD_STATE, buildState);
+        UpdaterSettingsManager.set(PROPERTY_CHECK_ON_STARTUP, Boolean.toString(checkForUpdatesOnStartupCheckBox.isSelected()));
+        UpdaterSettingsManager.saveSettings(configFile);
     }
 
     /**
@@ -80,33 +74,19 @@ public class UpdaterSettingsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jButton1 = new javax.swing.JButton();
+        updateURLLabel = new javax.swing.JLabel();
+        updateURLTextField = new javax.swing.JTextField();
+        buildStateLabel = new javax.swing.JLabel();
+        buildStateComboBox = new javax.swing.JComboBox();
+        checkForUpdatesOnStartupCheckBox = new javax.swing.JCheckBox();
 
-        jLabel1.setText("Update URL:");
+        updateURLLabel.setText("Update URL:");
 
-        jLabel2.setText("Build state:");
+        buildStateLabel.setText("Build state:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "alpha", "beta", "stable", "all" }));
+        buildStateComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "alpha", "beta", "stable", "all" }));
 
-        jCheckBox1.setText("Check for updates on startup");
-
-        jCheckBox2.setText("Delete old version after installing");
-
-        jButton1.setText("Save");
-        jButton1.setMaximumSize(new java.awt.Dimension(65, 23));
-        jButton1.setMinimumSize(new java.awt.Dimension(65, 23));
-        jButton1.setPreferredSize(new java.awt.Dimension(65, 23));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
+        checkForUpdatesOnStartupCheckBox.setText("Check for updates on startup");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -115,77 +95,40 @@ public class UpdaterSettingsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextField1)
+                    .addComponent(updateURLTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jCheckBox2)
-                            .addComponent(jLabel1)
+                            .addComponent(updateURLLabel)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
+                                .addComponent(buildStateLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jCheckBox1))
-                        .addGap(0, 105, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(buildStateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(checkForUpdatesOnStartupCheckBox))
+                        .addGap(0, 121, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(updateURLLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(updateURLTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(buildStateLabel)
+                    .addComponent(buildStateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBox1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBox2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(checkForUpdatesOnStartupCheckBox)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(configFile);
-            OutputFormat outputFormat = OutputFormat.createPrettyPrint();
-            XMLWriter xMLWriter = new XMLWriter(fileOutputStream, outputFormat);
-            Document doc = DocumentHelper.createDocument();
-            Element root = doc.addElement("updaterConfig");
-            root.addElement("updateURL").addText(jTextField1.getText());
-            root.addElement("programName").addText(updaterProperties.getProperty("programName"));
-            root.addElement("versionString").addText(updaterProperties.getProperty("versionString"));
-            String buildState = (String)jComboBox1.getSelectedItem();
-            if (buildState.equals("all")) {
-                buildState = "*";
-            }
-            root.addElement("buildState").addText(buildState);
-            root.addElement("deleteOldVersion").addText(Boolean.toString(jCheckBox2.isSelected()));
-            root.addElement("checkOnStartup").addText(Boolean.toString(jCheckBox1.isSelected()));
-            xMLWriter.write(doc);
-            xMLWriter.close();
-            Logger.log(Level.INFO, "Saved updater configuration to " + configFile.getAbsolutePath());
-        } catch (IOException ex) {
-            Logger.log(Level.ERROR, ex, "Failed to write file - " + configFile.getAbsolutePath() + ": " + ex.toString());
-            JOptionPane.showMessageDialog(getParent(), "<html><p style='width: 200px;'>Failed to save updater configuration.\n"
-                    + "Details: " + ex.toString(), "Save Failed", JOptionPane.ERROR_MESSAGE);
-        }
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JComboBox buildStateComboBox;
+    private javax.swing.JLabel buildStateLabel;
+    private javax.swing.JCheckBox checkForUpdatesOnStartupCheckBox;
+    private javax.swing.JLabel updateURLLabel;
+    private javax.swing.JTextField updateURLTextField;
     // End of variables declaration//GEN-END:variables
 }

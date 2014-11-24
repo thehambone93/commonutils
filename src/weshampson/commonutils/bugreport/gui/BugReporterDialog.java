@@ -17,7 +17,7 @@
  * MA 02110-1301  USA
  */
 
-package weshampson.commonutils.gui.bugreport;
+package weshampson.commonutils.bugreport.gui;
 
 import java.awt.Desktop;
 import java.io.IOException;
@@ -41,14 +41,16 @@ import weshampson.commonutils.xml.XMLReader;
 /**
  *
  * @author  Wes Hampson
- * @version 0.3.0 (Sep 20, 2014)
- * @since   0.1.0 (Aug 29, 2014)
+ * @version 0.3.1 (Nov 23, 2014)
+ * @since   0.3.1 (Nov 22, 2014)
  */
-public class BugReporter extends javax.swing.JFrame {
+public class BugReporterDialog extends javax.swing.JDialog {
     private static final String CONFIG_FILE = "META-INF/bugReporterConfig.xml";
     private String recipientAddress;
-    /** Creates new form BugReporter */
-    public BugReporter() {
+
+    /** Creates new form BugReporterDialog */
+    public BugReporterDialog(java.awt.Frame parent, boolean modal) {
+        super(parent, modal);
         initComponents();
         initDocumentListeners();
         initProviderComboBox();
@@ -100,9 +102,7 @@ public class BugReporter extends javax.swing.JFrame {
                     jLabel1.setText("<html><a href='mailto:" + recipientAddress + "'>" + recipientAddress);
                 }
             }
-        } catch (IOException ex) {
-            Logger.log(Level.ERROR, ex, null);
-        } catch (DocumentException ex) {
+        } catch (IOException | DocumentException ex) {
             Logger.log(Level.ERROR, ex, null);
         }
     }
@@ -116,7 +116,6 @@ public class BugReporter extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jSeparator1 = new javax.swing.JSeparator();
         emailAddressLabel = new javax.swing.JLabel();
         emaiUsernameTextField = new javax.swing.JTextField();
         emailProviderComboBox = new javax.swing.JComboBox<Email.EmailProvider>();
@@ -135,9 +134,8 @@ public class BugReporter extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JSeparator();
         jLabel4 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Bug Reporter");
-        setResizable(false);
 
         emailAddressLabel.setText("Email address:");
 
@@ -259,6 +257,8 @@ public class BugReporter extends javax.swing.JFrame {
         String emailText = emailBodyTextArea.getText();
         try {
             Email.sendEmail(emailProvider, recipientAddress, emailUsername, emailPassword, emailSubject, emailText);
+            JOptionPane.showMessageDialog(this, "Email sent successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            dispose();
         } catch (MessagingException ex) {
             Logger.log(Level.ERROR, ex, null);
             JOptionPane.showMessageDialog(this, "<html><p style='width: 200px;'>" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -291,7 +291,6 @@ public class BugReporter extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator separator;
     private javax.swing.JButton submitButton;

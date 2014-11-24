@@ -28,38 +28,21 @@ import javax.swing.JOptionPane;
 /**
  *
  * @author  Wes Hampson
- * @version 0.3.0 (Sep 27, 2014)
+ * @version 0.3.1 (Nov 23, 2014)
  * @since   0.3.0 (Sep 23, 2014)
  */
 class UpdateInstaller {
-    public static final String INSTALLER_VERSION_STRING = "0.3.0";
+    public static final String INSTALLER_VERSION_STRING = "0.3.1";
     public static void main(String[] args) {
         // java -cp "<rootdir>" weshampson.commonutils.updater.UpdateInstaller
-        boolean deleteOldVersion = false;
         String newVersionPath = "";
-        String oldVersionPath = "";
         System.out.println("Updater version " + INSTALLER_VERSION_STRING);
-        String usageString = "Usage: UpdateInstaller [options] <new version file>\n"
-                + "\n"
-                + "Options:\n"
-                + "    -d <old version file>      Delete old version";
+        String usageString = "Usage: UpdateInstaller <new version file>";
         if (args.length < 1) {
             printMessage(usageString);
             System.exit(1);
         } else {
-            for (int argCounter = 0; argCounter < args.length; argCounter++) {
-                if (args[argCounter].equals("-d")) {
-                    if (args.length > argCounter + 1) {
-                        deleteOldVersion = true;
-                        oldVersionPath = args[++argCounter];
-                        continue;
-                    } else {
-                        printMessage(usageString);
-                        System.exit(1);
-                    }
-                }
-                newVersionPath = args[argCounter];
-            }
+            newVersionPath = args[0];
         }
         if (newVersionPath.isEmpty()) {
             printMessage(usageString);
@@ -78,16 +61,6 @@ class UpdateInstaller {
         } else {
             printError("Error: file not found - " + newVersionPath);
             System.exit(1);
-        }
-        if (deleteOldVersion) {
-            System.out.println("Deleting old version...");
-            File oldVersionFile = new File(oldVersionPath);
-            if (oldVersionFile.exists() && !newVersionFile.isDirectory()) {
-                oldVersionFile.delete();
-            } else {
-                printError("Error: file not found - " + oldVersionPath);
-                System.exit(1);
-            }
         }
     }
     private static void launchNewVersion(File jarFile) throws IOException {

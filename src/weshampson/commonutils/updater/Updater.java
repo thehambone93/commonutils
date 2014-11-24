@@ -33,13 +33,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import weshampson.commonutils.ansi.ANSI;
@@ -52,34 +47,32 @@ import static weshampson.commonutils.logging.Level.DOCATTRS_WARNING;
 import weshampson.commonutils.logging.Logger;
 import static weshampson.commonutils.logging.Logger.STREAM_STDERR;
 import static weshampson.commonutils.logging.Logger.STREAM_STDOUT;
-import weshampson.commonutils.xml.XMLReader;
 
 /**
  *
  * @author  Wes Hampson
- * @version 0.3.0 (Sep 27, 2014)
+ * @version 0.3.1 (Nov 23, 2014)
  * @since   0.3.0 (Sep 20, 2014)
  */
 public class Updater extends javax.swing.JDialog {
     public static final int CANCEL_OPTION = -1;
     public static final int YES_OPTION = 0;
     public static final int NO_OPTION = 1;
-    private static final String DEFAULT_CONFIG_FILE = "META-INF/updaterConfig.xml";
-    private static final Logger UPDATER_LOGGER = Logger.getLogger();
-    private static final Level LEVEL_INFO = new Level(STREAM_STDOUT, "[%T UPDATER/INFO]: ", ANSI.Color.DEFAULT, DOCATTRS_INFO);
-    private static final Level LEVEL_ERROR = new Level(STREAM_STDERR, "[%T UPDATER/ERROR]: ", ANSI.Color.RED, DOCATTRS_ERROR);
-    private static final Level LEVEL_WARNING = new Level(STREAM_STDOUT, "[%T UPDATER/WARNING]: ", ANSI.Color.YELLOW, DOCATTRS_WARNING);
+    protected static final Level UPDATER_LEVEL_INFO = new Level(STREAM_STDOUT, "[%T UPDATER/INFO]: ", ANSI.Color.DEFAULT, DOCATTRS_INFO);
+    protected static final Level UPDATER_LEVEL_ERROR = new Level(STREAM_STDERR, "[%T UPDATER/ERROR]: ", ANSI.Color.RED, DOCATTRS_ERROR);
+    protected static final Level UPDATER_LEVEL_WARNING = new Level(STREAM_STDOUT, "[%T UPDATER/WARNING]: ", ANSI.Color.YELLOW, DOCATTRS_WARNING);
     private static final String UPDATE_AVAILABLE_PANEL_IDENTIFIER = "updateAvailablePanel";
     private static final String DOWNLOAD_PROGRESS_PANEL_IDENTIFIER = "downloadProgressPanel";
+    
     private final Window parentWindow = this;
     private final CardLayout cardLayout = new CardLayout();
-    private final Properties updaterProperties;
+//    private final Properties updaterProperties;
     private volatile boolean download;
     private boolean downloadCancelled;
     private boolean downloadError;
     private JSONObject updateInfo;
     private int exitOption = CANCEL_OPTION;
-    public Updater(java.awt.Frame parent, boolean modal, File configFile) throws IOException, DocumentException {
+    public Updater(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         setLayout(cardLayout);
@@ -87,23 +80,6 @@ public class Updater extends javax.swing.JDialog {
         cardLayout.addLayoutComponent(downloadProgressPanel, DOWNLOAD_PROGRESS_PANEL_IDENTIFIER);
         getContentPane().add(updateAvailablePanel);
         getContentPane().add(downloadProgressPanel);
-        this.updaterProperties = loadProperties(configFile);
-        
-    }
-    private Properties loadProperties(File configFile) throws IOException, DocumentException {
-        UPDATER_LOGGER.print(LEVEL_INFO, "Reading configuration from " + configFile.getAbsolutePath(), true, true);
-        Properties properties = new Properties();
-        if (!configFile.exists()) {
-            UPDATER_LOGGER.print(LEVEL_WARNING, "Configuration file not found! Extracting default configuration file to " + configFile.getAbsolutePath() + "...", true, true);
-            JarUtils.extractResource(DEFAULT_CONFIG_FILE, configFile.getAbsolutePath());
-        }
-        Document doc = XMLReader.read(configFile);
-        Element rootElement = doc.getRootElement();
-        for (Iterator i = rootElement.elementIterator(); i.hasNext();) {
-            Element e = (Element)i.next();
-            properties.put(e.getName(), e.getText());
-        }
-        return(properties);
     }
     
     /** Extracts the Updater class to the system's "temp" folder.
@@ -118,17 +94,17 @@ public class Updater extends javax.swing.JDialog {
         String fullyQualifiedClassName = UpdateInstaller.class.getCanonicalName();
         String resourceName = fullyQualifiedClassName.replace(".", "/") + ".class";
         String outFilePath = tmpDir + fileSeparator + fullyQualifiedClassName.replace(".", fileSeparator) + ".class";
-        UPDATER_LOGGER.print(LEVEL_INFO, "Extracting installer to " + tmpDir, true, true);
+        Logger.log(UPDATER_LEVEL_INFO, "Extracting installer to " + tmpDir);
         JarUtils.extractResource(resourceName, outFilePath);
         return(new File(tmpDir));
     }
     public boolean checkForUpdate() throws MalformedURLException, IOException {
-        String programName = updaterProperties.getProperty("programName");
-        String versionString = updaterProperties.getProperty("versionString");
-        String buildState = updaterProperties.getProperty("buildState");
-        Logger.getLogger().log(LEVEL_INFO, "Checking for updates...");
-        UPDATER_LOGGER.print(LEVEL_INFO, "Search criteria: programName=" + programName + ";versionString=" + versionString + ";buildState=" + buildState, true, true);
-        URL updateURL = new URL(updaterProperties.getProperty("updateURL") + "?programName=" + programName
+        String programName = UpdaterSettingsManager.get(UpdaterSettingsManager.PROPERTY_PROGRAM_NAME);
+        String versionString = UpdaterSettingsManager.get(UpdaterSettingsManager.PROPERTY_VERSION_STRING);
+        String buildState = UpdaterSettingsManager.get(UpdaterSettingsManager.PROPERTY_BUILD_STATE);
+        String updateURLString = UpdaterSettingsManager.get(UpdaterSettingsManager.PROPERTY_UPDATE_URL);
+        Logger.log(UPDATER_LEVEL_INFO, "Checking for updates...");
+        URL updateURL = new URL(updateURLString + "?programName=" + programName
                 + "&versionString=" + versionString
                 + "&buildState=" + buildState);
         StringBuilder stringBuilder = new StringBuilder();
@@ -142,9 +118,9 @@ public class Updater extends javax.swing.JDialog {
                         || uRLConnection.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM
                         || uRLConnection.getResponseCode() == HttpURLConnection.HTTP_SEE_OTHER) {
                     redirect = true;
-                    UPDATER_LOGGER.print(LEVEL_INFO, "HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage(), true, true);
+                    Logger.log(UPDATER_LEVEL_INFO, "HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage(), true, true);
                 } else {
-                    UPDATER_LOGGER.print(LEVEL_INFO, "Failed to check for updates: HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage(), true, true);
+                    Logger.log(UPDATER_LEVEL_INFO, "Failed to check for updates: HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage(), true, true);
                     throw new IOException("Failed to check for updates: HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage());
                 }
             }
@@ -161,9 +137,9 @@ public class Updater extends javax.swing.JDialog {
             }
         } catch (IOException ex) {
             if (ex instanceof ConnectException) {
-                UPDATER_LOGGER.print(LEVEL_ERROR, "Failed to check for updates: " + ex.getClass().getSimpleName() + ": " + ex.getMessage(), true, true);
+                Logger.log(UPDATER_LEVEL_ERROR, "Failed to check for updates: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
             } else {
-                UPDATER_LOGGER.print(LEVEL_ERROR, "Failed to check for updates: HTTP " + uRLConnection.getResponseCode(), true, true);
+                Logger.log(UPDATER_LEVEL_ERROR, "Failed to check for updates: HTTP " + uRLConnection.getResponseCode());
             }
             throw new IOException(ex);
         }
@@ -172,10 +148,10 @@ public class Updater extends javax.swing.JDialog {
         try {
             updateInfo = (JSONObject)jSONParser.parse(response);
             if (((String)updateInfo.get("updateAvailable")).equals("true")) {
-                UPDATER_LOGGER.print(LEVEL_INFO, "Update found! Version: " + (String)updateInfo.get("versionString"), true, true);
+                Logger.log(UPDATER_LEVEL_INFO, "Update found! Version: " + (String)updateInfo.get("versionString"));
                 return(true);
             } else {
-                UPDATER_LOGGER.print(LEVEL_INFO, "No updates found.", true, true);
+                Logger.log(UPDATER_LEVEL_INFO, "No updates found.");
                 return(false);
             }
         } catch (org.json.simple.parser.ParseException ex) {
@@ -183,7 +159,7 @@ public class Updater extends javax.swing.JDialog {
         }
     }
     public int showUpdateAvailableDialog() {
-        jButton1.requestFocus();
+        updateAvailableYesButton.requestFocus();
         cardLayout.show(getContentPane(), UPDATE_AVAILABLE_PANEL_IDENTIFIER);
         pack();
         setModal(isModal());
@@ -203,7 +179,7 @@ public class Updater extends javax.swing.JDialog {
                 @Override
                 protected Object doInBackground() throws Exception {
                     while (download) {
-                        UPDATER_LOGGER.print(LEVEL_INFO, "Downloading update from " + uRL + "...", true, true);
+                        Logger.log(UPDATER_LEVEL_INFO, "Downloading update from " + uRL + "...");
                         HttpURLConnection uRLConnection = (HttpURLConnection)uRL.openConnection();
                         uRLConnection.setRequestMethod("GET");
                         boolean redirect = false;
@@ -213,10 +189,10 @@ public class Updater extends javax.swing.JDialog {
                                     || uRLConnection.getResponseCode() == HttpURLConnection.HTTP_MOVED_PERM
                                     || uRLConnection.getResponseCode() == HttpURLConnection.HTTP_SEE_OTHER) {
                                 redirect = true;
-                                UPDATER_LOGGER.print(LEVEL_INFO, "HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage(), true, true);
+                                Logger.log(UPDATER_LEVEL_INFO, "HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage());
                             } else {
                                 downloadError = true;
-                                UPDATER_LOGGER.print(LEVEL_INFO, "Download failed: HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage(), true, true);
+                                Logger.log(UPDATER_LEVEL_INFO, "Download failed: HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage());
                                 showDownloadErrorDialog("HTTP " + uRLConnection.getResponseCode() + " - " + uRLConnection.getResponseMessage());;
                                 dispose();
                                 return(null);
@@ -224,14 +200,14 @@ public class Updater extends javax.swing.JDialog {
                         }
                         if (redirect) {
                             String newURL = uRLConnection.getHeaderField("Location");
-                            UPDATER_LOGGER.print(LEVEL_INFO, "New URL: " + newURL, true, true);
+                            Logger.log(UPDATER_LEVEL_INFO, "New URL: " + newURL);
                             uRLConnection = (HttpURLConnection)new URL(newURL).openConnection();
                         }
                         int retries = -1;
                         do {
                             retries++;
                             if (retries > 1) {
-                                UPDATER_LOGGER.print(LEVEL_INFO, "Retrying download... (" + retries + " of 20)", true, true);
+                                Logger.log(UPDATER_LEVEL_INFO, "Retrying download... (" + retries + " of 20)");
                             }
                             int bytesRead = 0;
                             byte[] buffer = new byte[16 * 1024];
@@ -244,7 +220,7 @@ public class Updater extends javax.swing.JDialog {
                             }
                             BufferedInputStream fileIn = new BufferedInputStream(uRLConnection.getInputStream());
                             FileOutputStream fileOut = new FileOutputStream(outputFile);
-                            UPDATER_LOGGER.print(LEVEL_INFO, "File size: " + downloadSize  + " bytes", true, true);
+                            Logger.log(UPDATER_LEVEL_INFO, "File size: " + downloadSize  + " bytes");
                             try {
                                 while ((bytesRead = fileIn.read(buffer)) != -1 && download) {
                                     fileOut.write(buffer, 0, bytesRead);
@@ -252,8 +228,8 @@ public class Updater extends javax.swing.JDialog {
                                     int tempPercent = (int)Math.round(((float)bytesDownloaded / (float)downloadSize) * 100);
                                     if (tempPercent > percentComplete) {
                                         percentComplete = tempPercent;
-                                        jProgressBar1.setValue(percentComplete);
-                                        jLabel3.setText(Math.round((float)bytesDownloaded / 1024.0) + " kB / " + Math.round((float)downloadSize / 1024.0) + " kB downloaded");
+                                        downloadProgressBar.setValue(percentComplete);
+                                        downloadProgressSizeLabel.setText(Math.round((float)bytesDownloaded / 1024.0) + " kB / " + Math.round((float)downloadSize / 1024.0) + " kB downloaded");
                                     }
                                 }
                             } catch (IOException ex) {
@@ -266,7 +242,7 @@ public class Updater extends javax.swing.JDialog {
                                 fileIn.close();
                                 download = false;
                                 if (!downloadCancelled && !downloadError) {
-                                    UPDATER_LOGGER.print(LEVEL_INFO, "Download complete.", true, true);
+                                    Logger.log(UPDATER_LEVEL_INFO, "Download complete! File saved at " + outputFile.getCanonicalPath());
                                 }
                                 dispose();
                                 break;
@@ -278,7 +254,7 @@ public class Updater extends javax.swing.JDialog {
                 @Override
                 protected void done() {
                     if (downloadCancelled) {
-                        UPDATER_LOGGER.print(LEVEL_INFO, "Download cancelled by user.", true, true);
+                        Logger.log(UPDATER_LEVEL_INFO, "Download cancelled by user.");
                         outputFile.delete();
                     }
                 }
@@ -288,6 +264,7 @@ public class Updater extends javax.swing.JDialog {
             pack();
             setModal(isModal());
             setTitle("Downloading update...");
+            downloadProgressFileLabel.setText("Downloading " + outputFileName + "...");
             setLocationRelativeTo(getParent());
             setVisible(true);
             if (!downloadError && !downloadCancelled) {
@@ -300,8 +277,8 @@ public class Updater extends javax.swing.JDialog {
         }
         return(null);
     }
-    public void installUpdate(File newVersionFile, File installerClassPath) throws IOException, InterruptedException {
-        JVMBuilder.exec(new String[] {"-cp", installerClassPath.getAbsolutePath()}, UpdateInstaller.class.getCanonicalName());
+    public void installUpdate(File newVersionFile, File oldVersionFile, File installerClassPath) throws IOException, InterruptedException {
+        JVMBuilder.exec(new String[] {"-cp", installerClassPath.getCanonicalPath()}, UpdateInstaller.class.getCanonicalName(), new String[] {newVersionFile.getCanonicalPath()});
     }
     private void showDownloadErrorDialog(String errorMessage) {
         JOptionPane.showMessageDialog(parentWindow, "<html><p style='width: 200px;'>An error occured while downloading the update.\n"
@@ -342,46 +319,47 @@ public class Updater extends javax.swing.JDialog {
     private void initComponents() {
 
         updateAvailablePanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        updateAvailableLabel1 = new javax.swing.JLabel();
+        updateAbailableLabel2 = new javax.swing.JLabel();
+        updateAvailableMoreInfoButton = new javax.swing.JButton();
+        updateAvailableNoButton = new javax.swing.JButton();
+        updateAvailableYesButton = new javax.swing.JButton();
         downloadProgressPanel = new javax.swing.JPanel();
-        jButton4 = new javax.swing.JButton();
-        jProgressBar1 = new javax.swing.JProgressBar();
-        jLabel3 = new javax.swing.JLabel();
+        downloadProgressFileLabel = new javax.swing.JLabel();
+        downloadProgressBar = new javax.swing.JProgressBar();
+        downloadProgressSizeLabel = new javax.swing.JLabel();
+        downloadProgressCancelButton = new javax.swing.JButton();
 
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("An update for this program is available!");
+        updateAvailableLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        updateAvailableLabel1.setText("An update for " + UpdaterSettingsManager.get(UpdaterSettingsManager.PROPERTY_PROGRAM_NAME) + " is available!");
 
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Would you like to download it?");
+        updateAbailableLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        updateAbailableLabel2.setText("Would you like to download it?");
 
-        jButton1.setText("Yes");
-        jButton1.setMaximumSize(new java.awt.Dimension(80, 23));
-        jButton1.setMinimumSize(new java.awt.Dimension(80, 23));
-        jButton1.setPreferredSize(new java.awt.Dimension(80, 23));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        updateAvailableMoreInfoButton.setText("More Info");
+        updateAvailableMoreInfoButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                updateAvailableMoreInfoButtonActionPerformed(evt);
             }
         });
 
-        jButton2.setText("No");
-        jButton2.setMaximumSize(new java.awt.Dimension(80, 23));
-        jButton2.setMinimumSize(new java.awt.Dimension(80, 23));
-        jButton2.setPreferredSize(new java.awt.Dimension(80, 23));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        updateAvailableNoButton.setText("No");
+        updateAvailableNoButton.setMaximumSize(new java.awt.Dimension(80, 23));
+        updateAvailableNoButton.setMinimumSize(new java.awt.Dimension(80, 23));
+        updateAvailableNoButton.setPreferredSize(new java.awt.Dimension(80, 23));
+        updateAvailableNoButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                updateAvailableNoButtonActionPerformed(evt);
             }
         });
 
-        jButton3.setText("More Info");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        updateAvailableYesButton.setText("Yes");
+        updateAvailableYesButton.setMaximumSize(new java.awt.Dimension(80, 23));
+        updateAvailableYesButton.setMinimumSize(new java.awt.Dimension(80, 23));
+        updateAvailableYesButton.setPreferredSize(new java.awt.Dimension(80, 23));
+        updateAvailableYesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                updateAvailableYesButtonActionPerformed(evt);
             }
         });
 
@@ -392,44 +370,46 @@ public class Updater extends javax.swing.JDialog {
             .addGroup(updateAvailablePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(updateAvailablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(updateAbailableLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(updateAvailableLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, updateAvailablePanelLayout.createSequentialGroup()
-                        .addComponent(jButton3)
+                        .addComponent(updateAvailableMoreInfoButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(updateAvailableNoButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(updateAvailableYesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         updateAvailablePanelLayout.setVerticalGroup(
             updateAvailablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(updateAvailablePanelLayout.createSequentialGroup()
                 .addGap(23, 23, 23)
-                .addComponent(jLabel1)
+                .addComponent(updateAvailableLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
+                .addComponent(updateAbailableLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                 .addGroup(updateAvailablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton3))
+                    .addComponent(updateAvailableYesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(updateAvailableNoButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(updateAvailableMoreInfoButton))
                 .addContainerGap())
         );
 
-        jButton4.setText("Cancel");
-        jButton4.setMaximumSize(new java.awt.Dimension(80, 23));
-        jButton4.setMinimumSize(new java.awt.Dimension(80, 23));
-        jButton4.setPreferredSize(new java.awt.Dimension(80, 23));
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        downloadProgressFileLabel.setText("Downloading <file>...");
+
+        downloadProgressBar.setStringPainted(true);
+
+        downloadProgressSizeLabel.setText("0 kB / 0 kB downloaded");
+
+        downloadProgressCancelButton.setText("Cancel");
+        downloadProgressCancelButton.setMaximumSize(new java.awt.Dimension(80, 23));
+        downloadProgressCancelButton.setMinimumSize(new java.awt.Dimension(80, 23));
+        downloadProgressCancelButton.setPreferredSize(new java.awt.Dimension(80, 23));
+        downloadProgressCancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                downloadProgressCancelButtonActionPerformed(evt);
             }
         });
-
-        jProgressBar1.setStringPainted(true);
-
-        jLabel3.setText("0 kB / 0 kB downloaded");
 
         javax.swing.GroupLayout downloadProgressPanelLayout = new javax.swing.GroupLayout(downloadProgressPanel);
         downloadProgressPanel.setLayout(downloadProgressPanelLayout);
@@ -438,24 +418,28 @@ public class Updater extends javax.swing.JDialog {
             .addGroup(downloadProgressPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(downloadProgressPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                    .addComponent(downloadProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, downloadProgressPanelLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(downloadProgressCancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(downloadProgressPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel3)
+                        .addGroup(downloadProgressPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(downloadProgressSizeLabel)
+                            .addComponent(downloadProgressFileLabel))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         downloadProgressPanelLayout.setVerticalGroup(
             downloadProgressPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, downloadProgressPanelLayout.createSequentialGroup()
-                .addContainerGap(36, Short.MAX_VALUE)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(16, Short.MAX_VALUE)
+                .addComponent(downloadProgressFileLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3)
+                .addComponent(downloadProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(downloadProgressSizeLabel)
                 .addGap(18, 18, 18)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(downloadProgressCancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -476,42 +460,43 @@ public class Updater extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void updateAvailableMoreInfoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAvailableMoreInfoButtonActionPerformed
         try {
-            JOptionPane.showMessageDialog(this, "<html><body><p style='width: 200px;'>Version: " + updateInfo.get("versionString") + "<br>"
+            JOptionPane.showMessageDialog(this, "<html><p style='width: 200px;'>Version: " + updateInfo.get("versionString") + "<br>"
                     + "Build state: " + updateInfo.get("buildState") + "<br>"
                     + "Build date: " + new SimpleDateFormat("MMMM dd, yyyy hh:mm:ss a").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse((String)updateInfo.get("buildTimestamp"))) + "<br><br>"
-                    + "Description: " + updateInfo.get("updateInfo") + "</body></html>", "Update Info", JOptionPane.INFORMATION_MESSAGE);
+                    + "Description: " + updateInfo.get("updateInfo"), "Update Info", JOptionPane.INFORMATION_MESSAGE);
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
         }
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_updateAvailableMoreInfoButtonActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void updateAvailableNoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAvailableNoButtonActionPerformed
         exitOption = NO_OPTION;
         dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_updateAvailableNoButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void updateAvailableYesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAvailableYesButtonActionPerformed
         exitOption = YES_OPTION;
         dispose();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_updateAvailableYesButtonActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void downloadProgressCancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downloadProgressCancelButtonActionPerformed
         cancelDownload();
         dispose();
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_downloadProgressCancelButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JProgressBar downloadProgressBar;
+    private javax.swing.JButton downloadProgressCancelButton;
+    private javax.swing.JLabel downloadProgressFileLabel;
     private javax.swing.JPanel downloadProgressPanel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JLabel downloadProgressSizeLabel;
+    private javax.swing.JLabel updateAbailableLabel2;
+    private javax.swing.JLabel updateAvailableLabel1;
+    private javax.swing.JButton updateAvailableMoreInfoButton;
+    private javax.swing.JButton updateAvailableNoButton;
     private javax.swing.JPanel updateAvailablePanel;
+    private javax.swing.JButton updateAvailableYesButton;
     // End of variables declaration//GEN-END:variables
 }

@@ -35,13 +35,11 @@ import weshampson.commonutils.logging.Logger;
 /**
  *
  * @author  Wes Hampson
- * @version 0.1.0 (Aug 30, 2014)
+ * @version 0.3.1 (Nov 22, 2014)
  * @since   0.1.0 (Aug 30, 2014)
  */
 public class Email {
     public static void sendEmail(EmailProvider emailProvider, String emailRecipient, final String emailUsername, final String emailPassword, String emailSubject, String emailText) throws AddressException, MessagingException {
-        Logger.log(Level.INFO, "Provider: " + emailProvider.getDomainName());
-        Logger.log(Level.INFO, "Username: " + emailUsername);
         Properties emailProperties = new Properties();
         emailProperties.put("mail.smtp.auth", "true");
         emailProperties.put("mail.smtp.host", emailProvider.getSMTPAddress());

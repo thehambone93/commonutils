@@ -17,17 +17,18 @@
  * MA 02110-1301  USA
  */
 
-package weshampson.commonutils.logging;
+package weshampson.commonutils.ansi;
 
 import java.io.PrintWriter;
 import org.fusesource.jansi.AnsiConsole;
-import weshampson.commonutils.ansi.ANSI;
 import weshampson.commonutils.io.DocumentOutputStream;
+import weshampson.commonutils.logging.Level;
+import weshampson.commonutils.logging.Logger;
 
 /**
  *
  * @author  Wes Hampson
- * @version 0.2.0 (Sep 6, 2014)
+ * @version 0.3.1 (Nov 22, 2014)
  * @since   0.2.0 (Sep 5, 2014)
  */
 public class ANSILogger extends Logger {

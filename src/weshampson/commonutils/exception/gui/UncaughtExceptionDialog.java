@@ -17,7 +17,7 @@
  * MA 02110-1301  USA
  */
 
-package weshampson.commonutils.gui.exception;
+package weshampson.commonutils.exception.gui;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -26,7 +26,7 @@ import weshampson.commonutils.io.DocumentOutputStream;
 /**
  *
  * @author  Wes Hampson
- * @version 0.2.0 (Sep 6, 2014)
+ * @version 0.3.1 (Nov 23, 2014)
  * @since   0.2.0 (Sep 5, 2014)
  */
 public class UncaughtExceptionDialog extends javax.swing.JDialog {
@@ -108,7 +108,7 @@ public class UncaughtExceptionDialog extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(exceptionDetailsScrollPane)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 138, Short.MAX_VALUE)
+                        .addGap(0, 202, Short.MAX_VALUE)
                         .addComponent(showDetailsToggleButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(oKButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -127,8 +127,8 @@ public class UncaughtExceptionDialog extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addComponent(terminateApplicationLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(exceptionDetailsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(exceptionDetailsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(oKButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(showDetailsToggleButton))

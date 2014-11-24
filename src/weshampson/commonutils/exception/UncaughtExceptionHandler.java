@@ -21,7 +21,7 @@ package weshampson.commonutils.exception;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import weshampson.commonutils.gui.exception.UncaughtExceptionDialog;
+import weshampson.commonutils.exception.gui.UncaughtExceptionDialog;
 import weshampson.commonutils.logging.Level;
 import weshampson.commonutils.logging.Logger;
 

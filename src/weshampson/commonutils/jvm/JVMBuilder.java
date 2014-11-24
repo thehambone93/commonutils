@@ -23,22 +23,29 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import weshampson.commonutils.logging.Level;
+import weshampson.commonutils.logging.Logger;
 
 /**
  *
  * @author  Wes Hampson
- * @version 0.3.0 (Sep 25, 2014)
+ * @version 0.3.1 (Nov 23, 2014)
  * @since   0.3.0 (Sep 25, 2014)
  */
 public class JVMBuilder {
-    public static void exec(String[] jVMArgs, String execFile) throws IOException, InterruptedException {
-        invokeNewJVMInstance(constructExecCommand(jVMArgs, execFile));
+    public static int exec(String[] jVMArgs, String execFile, String[] execFileArgs) throws IOException, InterruptedException {
+        return(invokeNewJVMInstance(constructExecCommand(jVMArgs, execFile, execFileArgs)));
     }
-    private static void invokeNewJVMInstance(List<String> execCommand) throws IOException, InterruptedException {
-        System.out.println("Invoking new JVM instance...");
+    private static int invokeNewJVMInstance(List<String> execCommand) throws IOException, InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        for (String s : execCommand) {
+            sb.append(s).append(' ');
+        }
+        Logger.log(Level.INFO, "Executing: " + sb.toString());
         ProcessBuilder jVMInstance = new ProcessBuilder(execCommand);
         Process p = jVMInstance.start();
-        int waitFor = p.waitFor();
+        int exitStatus = p.waitFor();
+        return(exitStatus);
     }
     private static String getJVMExecutable() {
         String javaHome = System.getProperty("java.home");
@@ -50,12 +57,12 @@ public class JVMBuilder {
         }
         return(jVMExecutable);
     }
-    private static List<String> constructExecCommand(String[] jVMArgs, String execFile) {
+    private static List<String> constructExecCommand(String[] jVMArgs, String execFile, String[] execFileArgs) {
         List<String> execCommand = new ArrayList<>();
         execCommand.add(getJVMExecutable());
         execCommand.addAll(Arrays.asList(jVMArgs));
         execCommand.add(execFile);
-        System.out.println("cmd: " + execCommand);
+        execCommand.addAll(Arrays.asList(execFileArgs));
         return(execCommand);
     }
 }

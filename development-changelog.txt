@@ -2,6 +2,25 @@
 *** Written by: Wes Hampson
 *** Started: 31 August 2014
 ===============================================================================
+     Version: 0.3.1
+     Started: 21 November 2014
+    Built by: Wes Hampson
+  Build date: 23 November 2014
+Build number: 151
+Changes made: -Renamed/moved class: "gui.bugreport.BugReport" >
+               "bugreport.gui.BugReporterDialog"
+              -Moved class: "logging.ANSILogger" > "ansi.ANSILogger"
+              -Moved class: "gui.exception.UncaughtExceptionDialog" >
+               "exception.gui.UncaughtExceptionDialog"
+              -Fixed a bug where the updater would not correctly launch the
+               installer and "install" the new program.
+              -Fixed a bug where closing the bug reporter would close the whole
+               program.
+              -Added class: "updater.UpdaterSettingsManager" - holds the
+               updater configuration data while the program is running. Handles
+               loading and saving updater configuration.
+              -UncaughtExceptionDialog text area is now larger.
+===============================================================================
      Version: 0.3.0
      Started: 12 September 2014
     Built by: Wes Hampson
