@@ -28,21 +28,28 @@ import javax.swing.JOptionPane;
 /**
  *
  * @author  Wes Hampson
- * @version 0.3.1 (Nov 23, 2014)
+ * @version 0.4.0 (Jan 30, 2015)
  * @since   0.3.0 (Sep 23, 2014)
  */
 class UpdateInstaller {
-    public static final String INSTALLER_VERSION_STRING = "0.3.1";
+    public static final String INSTALLER_VERSION_STRING = "0.4.0";
     public static void main(String[] args) {
         // java -cp "<rootdir>" weshampson.commonutils.updater.UpdateInstaller
         String newVersionPath = "";
         System.out.println("Updater version " + INSTALLER_VERSION_STRING);
-        String usageString = "Usage: UpdateInstaller <new version file>";
+        String usageString = "Usage: UpdateInstaller <new version file> [args]";
         if (args.length < 1) {
             printMessage(usageString);
             System.exit(1);
         } else {
             newVersionPath = args[0];
+        }
+        String[] newVersionArgs = null;
+        if (args.length > 1) {
+            newVersionArgs = new String[args.length - 1];
+            for (int i = 0; i < newVersionArgs.length; i++) {
+                newVersionArgs[i] = args[i + 1];
+            }
         }
         if (newVersionPath.isEmpty()) {
             printMessage(usageString);
@@ -52,7 +59,7 @@ class UpdateInstaller {
         File newVersionFile = new File(newVersionPath);
         if (newVersionFile.exists() && !newVersionFile.isDirectory()) {
             try {
-                launchNewVersion(newVersionFile);
+                launchNewVersion(newVersionFile, newVersionArgs);
             } catch (IOException ex) {
                 printError("Failed to launch new version.\n"
                         + "Error details: " + ex.toString());
@@ -63,7 +70,7 @@ class UpdateInstaller {
             System.exit(1);
         }
     }
-    private static void launchNewVersion(File jarFile) throws IOException {
+    private static void launchNewVersion(File jarFile, String[] cmdArgs) throws IOException {
         List<String> execCommand = new ArrayList<>();
         String javaHome = System.getProperty("java.home");
         String fileSeparator = System.getProperty("file.separator");
@@ -75,6 +82,11 @@ class UpdateInstaller {
         execCommand.add(jVMExecutable);
         execCommand.add("-jar");
         execCommand.add(jarFile.getAbsolutePath());
+        if (cmdArgs != null) {
+            for (String arg : cmdArgs) {
+                execCommand.add(arg);
+            }
+        }
         ProcessBuilder jVMInstance = new ProcessBuilder(execCommand);
         jVMInstance.start();
     }

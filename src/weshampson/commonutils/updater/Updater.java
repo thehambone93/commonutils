@@ -51,7 +51,7 @@ import static weshampson.commonutils.logging.Logger.STREAM_STDOUT;
 /**
  *
  * @author  Wes Hampson
- * @version 0.3.1 (Nov 23, 2014)
+ * @version 0.4.0 (Jan 30, 2015)
  * @since   0.3.0 (Sep 20, 2014)
  */
 public class Updater extends javax.swing.JDialog {
@@ -97,6 +97,9 @@ public class Updater extends javax.swing.JDialog {
         Logger.log(UPDATER_LEVEL_INFO, "Extracting installer to " + tmpDir);
         JarUtils.extractResource(resourceName, outFilePath);
         return(new File(tmpDir));
+    }
+    public boolean isDownloadCancelled() {
+        return(downloadCancelled);
     }
     public boolean checkForUpdate() throws MalformedURLException, IOException {
         String programName = UpdaterSettingsManager.get(UpdaterSettingsManager.PROPERTY_PROGRAM_NAME);
@@ -278,7 +281,11 @@ public class Updater extends javax.swing.JDialog {
         return(null);
     }
     public void installUpdate(File newVersionFile, File oldVersionFile, File installerClassPath) throws IOException, InterruptedException {
-        JVMBuilder.exec(new String[] {"-cp", installerClassPath.getCanonicalPath()}, UpdateInstaller.class.getCanonicalName(), new String[] {newVersionFile.getCanonicalPath()});
+        String newVersionArgs = (String)updateInfo.get("commandLineArgs");
+        String[] updateExecCommand = new String[2];
+        updateExecCommand[0] = newVersionFile.getCanonicalPath();
+        updateExecCommand[1] = newVersionArgs;
+        JVMBuilder.exec(new String[] {"-cp", installerClassPath.getCanonicalPath()}, UpdateInstaller.class.getCanonicalName(), updateExecCommand);
     }
     private void showDownloadErrorDialog(String errorMessage) {
         JOptionPane.showMessageDialog(parentWindow, "<html><p style='width: 200px;'>An error occured while downloading the update.\n"

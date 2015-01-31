@@ -2,6 +2,14 @@
 *** Written by: Wes Hampson
 *** Started: 31 August 2014
 ===============================================================================
+     Version: 0.4.0
+     Started: 30 January 2015
+    Built by: Wes Hampson
+  Build date: 30 January 2015
+Build number: 165
+Changes made: -Updater: Added support for launching new program version with
+               command line options.
+===============================================================================
      Version: 0.3.1
      Started: 21 November 2014
     Built by: Wes Hampson
